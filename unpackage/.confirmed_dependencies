@@ -1,0 +1,69 @@
+{
+	"html/main.html": {
+		"resources": [
+			"html/foodlist_main.html"
+		],
+		"refer": [
+			"html/foodlist_main.html",
+			"html/mine-offcanvasmenu.html",
+			"html/settings.html",
+			"html/winlottery.html"
+		]
+	},
+	"index.html": {
+		"refer": [
+			"html/main.html"
+		]
+	},
+	"html/foodlist_main.html": {
+		"resources": [
+			"html/foodlist_pullrefresh.html"
+		],
+		"refer": [
+			"html/foodlist_pullrefresh.html",
+			"html/barcode_scan.html"
+		]
+	},
+	"html/barcode_scan.html": {
+		"resources": [
+			"js/mui.min.js"
+		]
+	},
+	"html/foodlist_pullrefresh.html": {
+		"refer": [
+			"html/food_detail.html"
+		]
+	},
+	"html/food_detail.html": {
+		"refer": [
+			"html/map.html",
+			"html/comment_listitem.html"
+		]
+	},
+	"html/mine-offcanvasmenu.html": {
+		"refer": [
+			"html/login.html",
+			"html/myorders.html",
+			"html/favour.html"
+		]
+	},
+	"html/login.html": {
+		"resources": [
+			"css/login_register/login.css"
+		],
+		"refer": [
+			"html/register.html"
+		]
+	},
+	"html/myorders.html": {
+		"refer": [
+			"html/feedback.html",
+			"html/mycomment.html"
+		]
+	},
+	"html/favour.html": {
+		"refer": [
+			"html/food_detail.html"
+		]
+	}
+}

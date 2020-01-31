@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<title></title>
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="../css/winlottery/winlottery.css" />
+	</head>
+
+	<body>
+		<div class="content">
+			<div class="top_content">
+				<span class="lottery-list" id="lotteryList">中奖记录</span>
+				<span class="mui-icon mui-icon-info mui-action-back"></span>
+			</div>
+			<div style="clear: both;"></div>
+			<div class="shake_content" id="shake_area">
+				<img src="../img/imgs/hand.png" id="hand" />
+			</div>
+			<div class="note_content">
+				<p class="title1" id="t1">摇一摇</p>
+				<p class="title1 title2" id="t2">美食汇送好礼</p>
+				<p class="title3 hide_title" id="t3">今日中奖<span class="deco">0.00</span>元</p>
+				<p class="title3" id="t4">累计收入<span class="deco">0.00</span>元</p>
+				<div class="title5 hide_title" id="t5">您今天还可以摇<span class="deco">0</span>次</div>
+				<p class="title4">摇不了?点一点屏幕中间试试</p>
+			</div>
+		</div>
+
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			var main;
+			var mainid;
+			var self;
+			var win = {
+				t1: document.getElementById("t1"),
+				t2: document.getElementById("t2"),
+				t3: document.getElementById("t3"),
+				t5: document.getElementById("t5"),
+				amountSpan: document.querySelector("#t4 .deco"),
+				shakeSpan: document.querySelector("#t5 .deco"),
+				lotterySpan: document.querySelector("#t3 .deco"),
+				hand: document.getElementById("hand"),
+				returnback: document.getElementById('returnback'),
+				shakearea: document.getElementById('shake_area'),
+				lotteryList: document.getElementById("lotteryList")
+			};
+			var shakeAudio = null; //播放的音频对象
+			var shakeId = null; //监听id
+			var token = null; //UserToken
+			var type = 0; //抽奖类型
+
+			mui.plusReady(function() {
+				main = plus.webview.getWebviewById("main.html");
+				self = plus.webview.currentWebview();
+				// 锁定只能竖屏显示
+				plus.screen.lockOrientation("portrait-primary");
+				var url = api_url.winlotteryUrl.format(meishiapp.GetUserToken(), type);
+				//console.log(url);
+				mui.ajax(url, {
+					type: "GET",
+					cache: false,
+					timeout: 5000,
+					success: function(data) {
+						//console.log(JSON.stringify(data));
+						//累计收入和还可摇奖次数
+						win.amountSpan.innerText = data.Amount;
+						win.t5.classList.remove("hide_title");
+						win.shakeSpan.innerText = data.Count;
+						win.shakeCount = data.Count;
+						prepareHandShake();
+
+					},
+					error: function(xhr, type, errorThrown) {
+						//异常处理；
+						console.log(type);
+					}
+				});
+
+				//点击抽奖
+				win.shakearea.addEventListener('tap', function() {
+					shakeLottery();
+				});
+
+				//打开中奖记录
+				win.lotteryList.addEventListener("tap", function() {
+					mui.openWindow({
+						id: 'prize_list.html',
+						url: 'prize_list.html',
+						show: {
+							autoShow: false
+						}
+					})
+				});
+
+				//播放完摇手动画后读取数据
+				win.hand.addEventListener("animationend", function() {
+					//移除动画样式
+					hand.classList.remove("shake_hand");
+					resultWebview();
+				});
+				
+				self.addEventListener('hide',function(){
+					plus.accelerometer.clearWatch(wid);
+				})
+			});
+			function resultWebview(){
+				
+			}
+			function prepareHandShake() {
+				// 监听加速度
+				shakeId = plus.accelerometer.watchAcceleration(function(a) {
+					if((Math.abs(a.xAxis) + Math.abs(a.yAxis) + Math.abs(a.zAxis)) > 30) {
+						shakeLottery();
+					}
+				}, function(e) {
+					console.log("watch failed:" + e.message)
+				}, {
+					frequency: 100 // 设置更新间隔时间为0.1s
+				});
+			}
+
+			function shakeLottery() {
+				if(!shakeAudio) {
+					//播放音频
+					shakeAudio = plus.audio.createPlayer("../audio/shake.wav");
+					//console.log(shakeAudio)
+					shakeAudio.play();
+					//播放动画
+					hand.classList.add("shake_hand");
+					//控制设备振动时间
+					plus.device.vibrate(600);
+					setTimeout(function() {
+						if(shakeAudio) shakeAudio.stop();
+						//delete shakeAudio;//delete用来删除自定义对象的属性，不可以删除显示全局变量，可以删除隐式全局变量。
+						shakeAudio = null;
+					}, 600);
+					t1.classList.add("hide_title");
+					t2.classList.add("hide_title");
+					t5.classList.remove("hide_title");
+				}
+			}
+			document.addEventListener('swiperight', function(e) {
+				mui.fire(main, 'swiperight');
+			})
+
+			document.addEventListener('swipeleft', function(e) {
+				mui.fire(main, 'swipeleft');
+			})
+		</script>
+	</body>
+
+</html>

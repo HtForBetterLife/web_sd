@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>收藏</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../css/pull_refresh/list_item.css" />
+		<style type="text/css">
+			#favlist {
+				margin-top: 10px;
+			}
+			
+			.mui-table-view:before,
+			.mui-table-view:after {
+				height: 0;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">我的收藏（<span id="favcount">0</span>）</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view" id="favlist">
+
+			</ul>
+		</div>
+
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<script src="../js/template.js"></script>
+		<script type="text/html" id="favtemplate"></script>
+		<script type="text/javascript">
+			var myfavlist = {
+				favlist: document.getElementById("favlist"),
+				favcount: document.getElementById("favcount"),
+				favourtemplate: document.getElementById("favtemplate"),
+				favourdata: null
+			};
+			meishiapp.getTemplate("../template/food.tmpl", myfavlist.favourtemplate);
+			mui.plusReady(function() {
+				forFavour();
+				//显示当前页面
+				mui.currentWebview.show("pop-in", 200);
+				//关闭等待框
+				plus.nativeUI.closeWaiting();
+			});
+
+			document.addEventListener("fresh", forFavour);
+
+			function forFavour() {
+				//读取所有收藏信息
+				myfavlist.favourdata = JSON.parse(plus.storage.getItem("favourdata")) || [];
+				myfavlist.favcount.innerText = myfavlist.favourdata.length;
+				//用模板生成页面
+				var html = "";
+				for(var i = 0; i < myfavlist.favourdata.length; i++) {
+					html += template("favtemplate", myfavlist.favourdata[i]);
+				}
+				myfavlist.favlist.innerHTML = html.replace(/<br>/g, "");
+				createDelFunction();
+			}
+			//处理页面，为每个列表项添加左滑删除功能 
+			function createDelFunction() {
+				mui("#favlist li").each(function() {
+					var delContent = this.innerHTML;
+					this.innerHTML = "";
+					this.innerHTML = '<div class="mui-slider-right mui-disabled"><a class="mui-btn mui-btn-red">删除</a></div>';
+					var oDiv = document.createElement("div");
+					oDiv.className = "mui-slider-handle";
+					oDiv.innerHTML = delContent;
+					this.appendChild(oDiv);
+				});
+			}
+
+			//处理删除功能
+			mui('#favlist').on('tap', '.mui-btn', function(event) {
+				var elem = this;
+				var li = elem.parentNode.parentNode;
+				var deal_id = li.getAttribute("data-id");
+				meishiapp.removeFavour(deal_id);
+				li.parentNode.removeChild(li);
+				myfavlist.favcount.innerText = parseInt(myfavlist.favcount.innerText) - 1;
+			});
+
+			//点击列表进入详情页面
+			mui("#favlist").on("tap", "li", function() {
+				//打开美食详情
+				mui.openWindow({
+					id: 'food_detail.html',
+					url: 'food_detail.html',
+					show: {
+						autoShow: false
+					},
+					extras: {
+						deal_id: this.getAttribute("data-id")
+					}
+				});
+			});
+		</script>
+	</body>
+
+</html>

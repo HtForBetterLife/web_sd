@@ -1,0 +1,88 @@
+body,
+html,
+ul,
+li {
+	padding: 0;
+	margin: 0;
+}
+
+header.mui-bar-nav {
+	height: 50px;
+	background-color: #7A6874;
+}
+
+.mui-bar-nav .mui-input-row {
+	line-height: 50px;
+	height: 50px;
+	position: relative;
+}
+
+.mui-bar-nav .mui-input-row input[type=search] {
+	font-size: 15px;
+	font-family: "微软雅黑";
+	width: 64%;
+	height: 33px;
+	border-radius: 15px;
+	padding-left: 22px;
+	margin: 0;
+}
+
+.mui-search .mui-placeholder {
+	width: 64%;
+	height: 30px;
+	top: 0;
+	bottom: 0;
+	left: 19%;
+	font-size: 18px;
+	line-height: 30px;
+	margin-top: auto;
+	margin-bottom: auto;
+}
+
+.mui-search .mui-placeholder span:nth-child(2) {
+	font-size: 16px;
+}
+
+.mui-bar-nav.mui-bar .mui-icon {
+	font-size: 18px;
+	padding: 0;
+	margin: 0;
+	color: #999;
+}
+
+.mui-search.mui-active:before {
+	font-size: 16px;
+	padding: 0;
+	margin: 0;
+	left: 21%;
+	top: 0;
+	color: #999;
+}
+
+.mui-bar .mui-input-row .mui-input-clear~.mui-icon-clear,
+.mui-bar .mui-input-row .mui-input-speech~.mui-icon-speech {
+	right: 17%;
+	line-height: 50px;
+}
+/*成都市*/
+
+#area_name {
+	color: #fff;
+	margin-right: 15px;
+	font-size: 16px;
+	font-family: "微软雅黑";
+	white-space: nowrap;
+}
+
+
+/*saoma*/
+
+.icon-saoma {
+	color: #fff;
+	position: absolute;
+	right: 10px;
+	font-size: 23px;
+}
+
+
+

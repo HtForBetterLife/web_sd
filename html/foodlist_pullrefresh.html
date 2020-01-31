@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="../css/foodlist_main/pullrefresh.css" />
+		<link rel="stylesheet" type="text/css" href="../css/pull_refresh/list_item.css" />
+		<link rel="stylesheet" type="text/css" href="../css/pull_refresh/pullToRefresh.material.css" />
+	</head>
+
+	<body style="background-color: #fff;">
+		<div id="slider-content" class="mui-content">
+			<div id="sliderSegmentedControl" class="mui-segmented-control">
+				<a class="mui-control-item" href="#item1">
+					<span>美食分类</span>
+					<span class="mui-icon mui-icon-arrowdown"></span>
+				</a>
+				<a class="mui-control-item" href="#item2">
+					<span>美食距离</span>
+					<span class="mui-icon mui-icon-arrowdown"></span>
+				</a>
+				<a class="mui-control-item" href="#item3">
+					<span>排序方式</span>
+					<span class="mui-icon mui-icon-arrowdown"></span>
+				</a>
+			</div>
+			<div id="sliderList" class="mui-slider">
+				<div id="slider-group" class="mui-slider-group">
+					<div id="item1" class="mui-slider-item mui-control-content">
+						<div id="scroll1" class="mui-scroll-wrapper">
+							<div class="mui-scroll">
+								<ul class="mui-table-view">
+									<li class="mui-table-view-cell">
+										火锅
+									</li>
+									<li class="mui-table-view-cell">
+										海鲜
+									</li>
+									<li class="mui-table-view-cell">
+										西餐
+									</li>
+									<li class="mui-table-view-cell">
+										日韩料理
+									</li>
+									<li class="mui-table-view-cell">
+										自助餐
+									</li>
+									<li class="mui-table-view-cell">
+										烧烤烤肉
+									</li>
+									<li class="mui-table-view-cell">
+										小吃快餐
+									</li>
+									<li class="mui-table-view-cell">
+										甜点饮品
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div id="item2" class="mui-slider-item mui-control-content">
+						<div id="scroll2" class="mui-scroll-wrapper">
+							<div class="mui-scroll">
+								<ul class="mui-table-view">
+									<li class="mui-table-view-cell">
+										1千米
+									</li>
+									<li class="mui-table-view-cell">
+										3千米
+									</li>
+									<li class="mui-table-view-cell">
+										5千米
+									</li>
+									<li class="mui-table-view-cell">
+										10千米
+									</li>
+								</ul>
+							</div>
+						</div>
+
+					</div>
+					<div id="item3" class="mui-slider-item mui-control-content">
+						<div id="scroll1" class="mui-scroll-wrapper">
+							<div class="mui-scroll">
+								<ul class="mui-table-view">
+									<li class="mui-table-view-cell">
+										销量
+									</li>
+									<li class="mui-table-view-cell">
+										距离
+									</li>
+									<li class="mui-table-view-cell">
+										价格
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--下拉刷新容器-->
+		<div id="refreshContent" class="mui-content mui-scroll-wrapper" style="background-color: #fff;">
+			<!--数据列表-->
+			<div id="scroll" class="mui-scroll">
+				<ul id="foodlist" class="mui-table-view mui-table-view-chevron">
+
+				</ul>
+			</div>
+		</div>
+		<div class="mui-backdrop"></div>
+		<script id="foodtemplate" type="text/html"></script>
+		<script type="text/javascript" src="../js/mui.min.js"></script>
+		<script type="text/javascript" src="../js/app.js"></script>
+		<script>
+			var page = 0; //页码
+			var foodlist_pullrefresh = {
+				foodtemplate: document.getElementById("foodtemplate"),
+				foodlist: document.getElementById("foodlist")
+			};
+			//加载模板文件到模板容器
+			meishiapp.getTemplate("../template/food.tmpl", foodlist_pullrefresh.foodtemplate);
+		</script>
+		<script type="text/javascript" src="../js/app.js"></script>
+		<script type="text/javascript" src="../js/template.js"></script>
+		<script type="text/javascript" src="../js/mui.pullToRefresh.js"></script>
+		<script type="text/javascript" src="../js/mui.pullToRefresh.material.js"></script>
+		<script type="text/javascript" src="../js/mui.lazyload.js"></script>
+		<script type="text/javascript" src="../js/mui.lazyload.img.js"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false
+			});
+
+			//获取main响应滑动事件
+			var main = null;
+			var foodlist_main = null;
+			var mask = document.getElementsByClassName('mui-backdrop')[0];;
+			var slider_group = document.getElementById('slider-group');
+			var controlItem = document.getElementsByClassName('mui-control-item');
+			var slider = document.getElementById('sliderList');
+			var sliderSegmentedControl = document.getElementById('sliderSegmentedControl');
+			var upMoreData = true;
+			mui.plusReady(function() {
+				main = plus.webview.getWebviewById("main.html");
+				//得到foodlist_main的webview对象
+				foodlist_main = plus.webview.getWebviewById("foodlist_main.html");
+				mui('.mui-scroll-wrapper').scroll({
+					bounce: true,
+					indicators: true, //是否显示滚动条
+					deceleration: 0.0004
+				});
+
+				//配置下拉和上滑刷新  
+				mui('#scroll').pullToRefresh({
+					down: {
+						callback: pulldownRefresh
+					},
+					up: {
+						auto: true,
+						height: 100,
+						callback: pullupRefresh
+					}
+				});
+
+				//循环遍历controlItem
+				mui("#sliderSegmentedControl").on('tap', ".mui-control-item", function() {
+					sliderInMain(true);
+					var _this = this;
+					if(this.classList.contains("mui-active")) {
+						slider.style.zIndex = -1;
+						setTimeout(function() {
+							_this.classList.remove("mui-active");
+						}, 1)
+						mask.style.display = 'none';
+
+					} else {
+						slider.style.zIndex = 99;
+						mask.style.display = 'block';
+					}
+				})
+
+				document.getElementById('sliderList').addEventListener('slide', function(e) {
+					if(e.detail.slideNumber === 0) {
+						addList(controlItem[0])
+						removeList(controlItem[1])
+						removeList(controlItem[2])
+					} else if(e.detail.slideNumber === 1) {
+						addList(controlItem[1])
+						removeList(controlItem[0])
+						removeList(controlItem[2])
+					} else {
+						addList(controlItem[2])
+						removeList(controlItem[0])
+						removeList(controlItem[1])
+					}
+				})
+
+				//美食列表选项的点击
+				mui("#foodlist").on("tap", "li", function() {
+					var id = this.getAttribute("data-id");
+					//打开美食详情
+					mui.openWindow({
+						id: 'food_detail.html',
+						url: 'food_detail.html',
+						show: {
+							autoShow: false
+						},
+						extras: {
+							deal_id: id
+						}
+					});
+				});
+			});
+
+			//蒙版点击事件
+			mask.addEventListener('tap', function() {
+				slider.style.zIndex = -1;
+				for(var i = 0; i < controlItem.length; i++) {
+					if(controlItem[i].classList.contains("mui-active")) {
+						controlItem[i].classList.remove('mui-active');
+					}
+				}
+				mask.style.display = 'none';
+			})
+
+			//pullRefresh============================================================================================
+			/**
+			 * 下拉刷新具体业务实现
+			 */
+			function pulldownRefresh() {
+				//打开foodlist_main上的轮播
+				setTimeout(function() {
+					sliderInMain(false);
+					meishiapp.dataType.foodData.offset = ++page;
+					addFood(false);
+					mui('#scroll').pullToRefresh().endPullDownToRefresh();
+					//下拉时禁止上拉
+					mui('#scroll').pullToRefresh().refresh(true);
+				}, 1000)
+			}
+
+			/** 
+			 * 上拉加载具体业务实现
+			 */
+			function pullupRefresh() {
+
+				sliderInMain(true);
+				setTimeout(function() {
+					//页码递增,加载数据
+					meishiapp.dataType.foodData.offset = ++page;
+					addFood(true);
+					if(upMoreData){
+						setTimeout(function(){
+							mui('#scroll').pullToRefresh().endPullUpToRefresh();
+						},1500)
+					}else{
+						mui('#scroll').pullToRefresh().endPullUpToRefresh(true);
+					}
+				}, 500)
+
+			}
+
+			/**
+			 * 添加食物.利用模板，获取数据后更新界面，isUp表示是否上滑
+			 */
+			function addFood(isUp) {
+				mui.ajax(api_url.getFoodUrl, {
+					data: JSON.stringify(meishiapp.dataType.foodData),
+					headers: {
+						'Content-Type': 'application/json'
+					}, 
+					type: 'POST', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						if(res.length <= 0){
+							upMoreData = false;
+						}
+						//数据读取成功，使用artTemplate生成需要的html
+						var htmlContent = "";
+						for(var i = 0; i < res.length; i++) {
+							htmlContent += template("foodtemplate", res[i]);
+						}
+						//利用模板生成需要的html，再附加
+						if(isUp) {
+							foodlist_pullrefresh.foodlist.innerHTML = foodlist_pullrefresh.foodlist.innerHTML + htmlContent.replace(/<br>/g, "");
+						} else {
+							foodlist_pullrefresh.foodlist.innerHTML = htmlContent.replace(/<br>/g, "") + foodlist_pullrefresh.foodlist.innerHTML;
+						}
+						//console.log(res)
+					},
+					error: function(xhr, type, errorThrown) {
+						//异常处理；   
+						console.log(type);
+					}
+				});
+			}
+
+			//对于foodlist_main上中的sliderImg处理逻辑方法
+			function sliderInMain(isHidden) {
+				if(foodlist_main) {
+					var eventName = isHidden ? "closeSlider" : "openSlider";
+					var topValue = isHidden ? "50px" : "215px";
+					mui.fire(foodlist_main, eventName, null);
+					plus.webview.currentWebview().setStyle({
+						top: topValue,
+						transition: {
+							duration: 1000
+						}
+					});
+				}
+			}
+
+			//下拉列表===============================================================================
+			//实现懒加载图片
+			mui(document).imageLazyload({
+				placeholder: '../img/imgs/lazyload.png'
+			});
+
+			function getstyle(obj, attr) {
+				if(obj.currentStyle) {
+					return obj.currentStyle[attr];
+				} else {
+					return getComputedStyle(obj, false)[attr];
+				}
+			};
+
+			function removeList(elem) {
+				elem.classList.remove('mui-active');
+			}
+
+			function addList(elem) {
+				elem.classList.add('mui-active');
+			}
+
+			//canvas滑动
+			document.addEventListener('swiperight', function(e) {
+				mui.fire(main, 'swiperight');
+			})
+
+			document.addEventListener('swipeleft', function(e) {
+				mui.fire(main, 'swipeleft');
+			})
+		</script>
+	</body>
+
+</html>

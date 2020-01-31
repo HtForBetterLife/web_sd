@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html class="feedback">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>mycomment</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../css/comment/feedback.css" />
+		<style type="text/css">
+			.feedback .image-list {
+				height: auto;
+			}
+			
+			#submit:focus {
+				outline: 0;
+			}
+			
+			#placeholder0 {}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">评价详情</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-content-padded">
+				<div class="mui-inline">你的评语</div>
+			</div>
+		</div>
+		<div class="row mui-input-row">
+			<textarea id='question' class="mui-input-clear question" disabled></textarea>
+		</div>
+		<div id="imgArea">
+			<p>图片</p>
+			<div id='image-list' class="row image-list">
+			</div>
+		</div>
+		<div class="mui-content-padded">
+			<div class="mui-inline">你的评分</div>
+			<div class="icons mui-inline" style="margin-left: 6px;" id="stars">
+				<i data-index="1" class="mui-icon mui-icon-star"></i>
+				<i data-index="2" class="mui-icon mui-icon-star"></i>
+				<i data-index="3" class="mui-icon mui-icon-star"></i>
+				<i data-index="4" class="mui-icon mui-icon-star"></i>
+				<i data-index="5" class="mui-icon mui-icon-star"></i>
+			</div>
+		</div><br />
+
+		<script src="../js/app.js"></script>
+		<script src="../js/mui.min.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			var mycomment = {
+				orderId: null,
+				stars: document.querySelectorAll("#stars i"),
+				question: document.getElementById("question"),
+				imglist: document.getElementById("image-list"),
+				imgArea: document.getElementById("imgArea"),
+				self: null,
+				token: null,
+				url: null
+			};
+
+			mui.plusReady(function() {
+				mycomment.self = plus.webview.currentWebview();
+				mycomment.orderId = mycomment.self.orderid;
+				mycomment.token = meishiapp.GetUserToken();
+				mycomment.url = api_url.orderCommentUrl.format(mycomment.token, mycomment.orderId);
+				mui.ajax(mycomment.url, {
+					type: "GET",
+					cache: false,
+					dataType: "json",
+					success: function(res) {
+						//console.log(JSON.stringify(res));
+						mycomment.question.innerText = res.comment;
+						var count = res.rate;
+						for(var i = 0; i < count; i++) {
+							mycomment.stars[i].classList.remove("mui-icon-star");
+							mycomment.stars[i].classList.add("mui-icon-star-filled");
+						}
+						//生成图片列表
+						//eval执行参数里面的字符串代码
+						getImgList(eval(res.commentImgs));
+						//显示当前页面
+						mui.currentWebview.show("pop-in", 200);
+						//关闭等待框
+						plus.nativeUI.closeWaiting();
+					},
+					error: function(xhr, type, res) {
+						console.log(type);
+					}
+				});
+			})
+
+			function getImgList(datas) {
+				//console.log(datas.length);
+				//数据为0就“none”掉图片区域
+				if(!datas.length) {
+					mycomment.imgArea.style.display = "none";
+					return;
+				}
+				for(var i = 0; i < datas.length; i++) {
+					var odiv = document.createElement("div");
+					odiv.classList.add("image-item");
+					odiv.classList.add("space");
+					odiv.style.backgroundImage = "url(" + datas[i] + ")";
+					mycomment.imglist.appendChild(odiv);
+				}
+			}
+		</script>
+	</body>
+
+</html>

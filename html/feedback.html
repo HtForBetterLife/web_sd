@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="feedback">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>feedback</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../css/comment/feedback.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<span id="submit" class="mui-btn mui-btn-blue mui-btn-link mui-pull-right">发布</span>
+			<h1 class="mui-title">美食评价</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-content-padded">
+				<div class="mui-inline">评语</div>
+				<a class="mui-pull-right mui-inline" href="#popover">
+					快速输入
+					<span class="mui-icon mui-icon-arrowdown"></span>
+				</a>
+				<!--快捷输入具体内容，开发者可自己替换常用语-->
+				<div id="popover" class="mui-popover">
+					<div class="mui-popover-arrow"></div>
+					<div class="mui-scroll-wrapper">
+						<div class="mui-scroll">
+							<ul class="mui-table-view">
+								<!--仅流应用环境下显示-->
+								<li class="mui-table-view-cell stream">
+									<a href="#">桌面快捷方式创建失败</a>
+								</li>
+								<li class="mui-table-view-cell">
+									<a href="#">什么东西啊，太难吃了！</a>
+								</li>
+								<li class="mui-table-view-cell">
+									<a href="#">非常好吃，以后还会常来的。</a>
+								</li>
+								<li class="mui-table-view-cell">
+									<a href="#">菜品还可以，就是服务态度欠佳。</a>
+								</li>
+								<li class="mui-table-view-cell">
+									<a href="#">环境也好，味道也不错，会向其他朋友推荐的。</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<div class="row mui-input-row">
+				<textarea id='question' class="mui-input-clear question" placeholder="请写下评语(0-200字)..."></textarea>
+			</div>
+			<p>图片(最多只能9张)</p>
+			<div id="image-list" class="row image-list">
+				<!--<div class="image-item space" id="placeholder0">
+					<div class="image-close">X</div>
+					<div class="file" id="images0"></div>
+				</div>-->
+			</div>
+
+			<div class="mui-content-padded">
+				<div class="mui-inline">美食评分</div>
+				<div class="icons mui-inline" style="margin-left: 6px;">
+					<i data-index="1" class="mui-icon mui-icon-star-filled"></i>
+					<i data-index="2" class="mui-icon mui-icon-star"></i>
+					<i data-index="3" class="mui-icon mui-icon-star"></i>
+					<i data-index="4" class="mui-icon mui-icon-star"></i>
+					<i data-index="5" class="mui-icon mui-icon-star"></i>
+				</div>
+			</div>
+		</div>
+
+		<script src="../js/app.js"></script>
+		<script src="../js/mui.min.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			var feedback = {
+				question: document.getElementById('question'),
+				contact: document.getElementById('contact'),
+				imageList: document.getElementById('image-list'),
+				submitBtn: document.getElementById('submit'),
+				self: null, //当前webview对象，
+				files: []
+			};
+			var imageIndexIdNum = 0;
+			var index = 0;
+			mui.plusReady(function() {
+				plus.nativeUI.closeWaiting();
+				feedback.self = plus.webview.currentWebview();
+				feedback.self.show("pop-in", 200);
+
+				//星级评分
+				mui('.icons').on('tap', 'i', function() {
+					var index = parseInt(this.getAttribute("data-index"));
+					var parent = this.parentNode;
+					var children = parent.children;
+					if(this.classList.contains("mui-icon-star")) {
+						for(var i = 0; i < index; i++) {
+							children[i].classList.remove('mui-icon-star');
+							children[i].classList.add('mui-icon-star-filled');
+						}
+					} else {
+						for(var i = index; i < 5; i++) {
+							children[i].classList.add('mui-icon-star')
+							children[i].classList.remove('mui-icon-star-filled')
+						}
+					}
+					starIndex = index;
+				});
+
+				//选择快捷输入
+				mui('.mui-popover').on('tap', 'li', function(e) {
+					document.getElementById("question").value = document.getElementById("question").value + this.children[0].innerText;
+					mui('.mui-popover').popover('toggle')
+				})
+
+				//创建图片域占位
+				feedback.newPlaceholder();
+
+				//发布按钮事件
+				feedback.submitBtn.addEventListener("tap", function() {
+					if(feedback.question.value == '') {
+						return mui.toast('评论不能为空');
+					}
+					if(feedback.question.value.length > 200) {
+						return mui.toast('评论超长,请重新填写~')
+					}
+					//console.log(JSON.stringify(feedback.files));
+					//判断网络连接
+					if(plus.networkinfo.getCurrentType() == plus.networkinfo.CONNECTION_NONE) {
+						return mui.toast("连接网络失败，请稍后再试");
+					}
+					feedback.send(feedback.question.value);
+				});
+			});
+ 
+			/**
+			 * 创建图片域占位以及相应事件
+			 */
+			feedback.newPlaceholder = function(multiple) {
+				var placeholder = document.createElement('div');
+				placeholder.setAttribute('class', 'image-item space');
+				placeholder.setAttribute("id", "placeholder" + index++);
+
+				//添加多图时，去除“+”号图片，因为图片的异步加载。
+				if(multiple) {
+					placeholder.style.backgroundImage = "none";
+				}
+
+				//选择按钮生成
+				var fileInput = document.createElement('div');
+				fileInput.setAttribute('class', 'file');
+				fileInput.setAttribute('id', 'images' + imageIndexIdNum++);
+				//点击添加图片按钮
+				fileInput.addEventListener('tap', function(event) {
+					//只有“+”的图片的选择框才能点击
+					if(this.parentNode.classList.contains("space")) {
+						// 弹出系统选择按钮框
+						plus.nativeUI.actionSheet({
+							cancel: "取消",
+							buttons: [{
+								title: "拍照"
+							}, {
+								title: "从相册选择"
+							}]
+						}, function(e) {
+							if(e.index == 1) {
+								//处理拍照
+								dealCameraImage(placeholder);
+							} else if(e.index == 2) {
+								//处理相册选择
+								dealGalleryImage();
+							}
+						});
+					}
+
+				});
+
+				//删除按钮生成
+				var closeButton = document.createElement('div');
+				closeButton.setAttribute('class', 'image-close');
+				closeButton.innerHTML = 'X';
+				//相应的点击事件
+				closeButton.addEventListener('tap', function(event) {
+
+					//从图片文件数组中移除当前文件
+					var imgid = placeholder.querySelector(".file").parentNode.getAttribute("id");
+					removeFromFileList(imgid);
+					//移除当前图片所在域
+					feedback.imageList.removeChild(placeholder);
+					//如果删完了，就加一个添加框
+					if(document.querySelectorAll("div.space").length == 0) {
+						feedback.newPlaceholder();
+					}
+
+				}, false);
+
+				placeholder.appendChild(closeButton);
+				placeholder.appendChild(fileInput);
+				if(!multiple) {
+					feedback.imageList.appendChild(placeholder);
+				} else {
+					feedback.imageList.insertBefore(placeholder, feedback.imageList.firstChild);
+				}
+				return placeholder;
+			}
+
+			//从数组中移除掉指定id的图片
+			function removeFromFileList(imgId) {
+				for(var i = 0; i < feedback.files.length; i++) {
+					//console.log(feedback.files[i].name);
+					if(feedback.files[i].name == imgId) {
+						feedback.files.splice(i, 1);
+						return;
+					}
+				}
+			}
+
+			//处理每张图片,把它显示在placeholder中
+			function dealImg(img, placeholder) {
+				var name = img.substr(img.lastIndexOf('/') + 1);
+				//压缩图片,减小文件尺寸
+				plus.zip.compressImage({
+					src: img, //源路径
+					dst: "_doc/zip/" + name, //压缩后的路径
+					overwrite: true, //可以覆盖
+					quality: 50 //压缩质量为50%
+				}, function(zip) {
+					//console.log(zip.size);
+					//console.log(zip.target);//文件路径
+					placeholder.classList.remove('space'); //让其出现删除按钮
+					feedback.files.push({
+						name: placeholder.getAttribute("id"),
+						path: zip.target
+					});
+					//console.log(JSON.stringify(feedback.files));
+					placeholder.style.backgroundImage = 'url(' + zip.target + ')'; //显示图片
+				}, function(e) {
+					console.log("压缩失败了！");
+				});
+			} 
+
+			//处理相册选择图片
+			function dealGalleryImage() {
+				plus.gallery.pick(function(e) {
+					var filescount = feedback.files.length; //已有文件数
+					//如果超过9张后要处理掉添加按钮
+					if(filescount + e.files.length >= 9) {
+						var placeholders = document.querySelectorAll(".image-item");
+						feedback.imageList.removeChild(placeholders[placeholders.length - 1]);
+					}
+					//所选图片路径数组，注意要扣除已有的数目，多选的不要处理
+					var mfiles = e.files.slice(0, 9 - filescount);
+					//console.log(mfiles.length);
+					var placeholders = [];
+					/*先根据选择的图片数目，创建出相应的placeholer，因为压缩用的是异步处理*/
+					for(var i = 0; i < mfiles.length; i++) {
+						placeholders.push(feedback.newPlaceholder(true));
+					}
+					//再依次显示每张图片在相应的placeholder中
+					for(var i = 0; i < mfiles.length; i++) {
+						dealImg(e.files[i], placeholders.pop());
+					}
+
+				}, function(e) {
+
+				}, {
+					filter: "image",
+					multiple: true,
+					maximum: 9 - feedback.files.length //一次最多选9张
+				});
+			}
+
+			//处理照相图片
+			function dealCameraImage(placeholder) {
+				//拍照 
+				var cam = plus.camera.getCamera();
+				cam.captureImage(function(e) {
+					plus.io.resolveLocalFileSystemURL(e, function(entry) {
+						var imgUrl = entry.toLocalURL();
+						dealImg(imgUrl, feedback.newPlaceholder(true));
+					}, function(e) {
+						console.log("读取拍照文件错误：" + e.message);
+					});
+				}, function(e) {
+					console.log("Camera error:" + e);
+				}, {
+					filename: "_doc/camera/", //保存路径
+					index: 1 //表示主摄像头
+				})
+			}
+
+			//发布事件
+			feedback.send = function(comment) {
+				plus.nativeUI.showWaiting();
+				//取星级评分
+				var stars = mui(".mui-icon-star-filled").length;
+				//创建上传文件对象
+				//console.log(api_url.uploadimgUrl);
+				//请求上传管理创建新的上传任务，创建成功则返回Upload对象，用于管理上传任务。 
+				var uploader = plus.uploader.createUpload(api_url.uploadimgUrl, {
+					method: "POST"
+				}, function(upload, status) {
+					//请求上传任务成功
+					if(upload.state == 4 && status == 200) {
+						var resData = JSON.parse(upload.responseText);
+						console.log(upload.responseText);
+						//构建评论数据
+						var data = {};
+						var userToken = plus.storage.getItem("user_token");
+						if(!userToken) {
+							userToken = "987654321";
+						} 
+						data.userToken = userToken;
+						data.comment = comment;
+						data.rate = stars;
+						data.commentImgs = JSON.stringify(resData.ImgUrls);
+						data.orderID = feedback.self.orderid;
+						//console.log(JSON.stringify(data));
+						//发布评论数据
+						mui.ajax(api_url.commentUrl, {
+							type: "POST",
+							data: JSON.stringify(data),
+							headers: {
+								'Content-Type': 'application/json;charset=utf-8'
+							},
+							success: function(res) {
+								if(res == "ok") {
+									mui.toast("评价已成功！");
+									//重新打开“我的订单"
+									feedback.self.opener().show();
+									setTimeout(function() {
+										feedback.self.close();
+									}, 10);
+								}
+							},
+							error: function(xhr, type, message) {
+								console.log(type);
+							}
+						}); 
+						plus.nativeUI.closeWaiting();
+					}
+				});
+
+				for(var i = 0; i < feedback.files.length; i++) {
+					//console.log(feedback.files[i].path);
+					//向上传任务中添加文件，在任务开始上传前调用。 
+					uploader.addFile(feedback.files[i].path);
+				}
+				//开始上传
+				uploader.start();
+			}
+		</script>
+	</body>
+
+</html>

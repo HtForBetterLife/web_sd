@@ -1,0 +1,53 @@
+.comment_area {
+	margin-top: 10px;
+	background-color: #fff;
+	border-top: 1px solid #c8c7cc;
+	padding: 0px 10px 0px;
+}
+
+.comment_area a.mui-navigate-right {
+	color: #000;
+	padding-bottom: 20px;
+}
+
+.customer_comment_area {
+	float: left;
+	width: 120%;
+	padding-right: -65px;
+}
+
+.customer_comment_area .photo_area {
+	float: left;
+	width: 20%;
+}
+
+.customer_comment_area .com_area {
+	float: right;
+	width: 80%;
+}
+
+.customer_comment_area .photo_area img {
+	border-radius: 25px;
+	width: 50px;
+	height: 50px;
+	float: right;
+	margin-right: 20px;
+}
+
+.customer_comment_area .com_area .username {
+	color: #FF512F;
+	font-size: 18px;
+	margin-bottom: 10px;
+}
+
+.comment_entry {
+	font-size: 14px;
+}
+
+.comment_img img {
+	float: left;
+	width: 75px;
+	height: 75px;
+	margin-right: 5px;
+	margin-top: 5px;
+}

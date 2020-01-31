@@ -1,0 +1,86 @@
+body, html{
+	background-color: #F1F1F1;
+}
+
+.mui-bar-nav~.mui-content{
+	width: 320px;
+	margin: 0 auto;
+	margin-top: 154px;
+	padding: 0;
+	background-color: #fff;
+	background-color: #ffffff;
+	box-shadow: 0px 8px 9.3px 0.7px 
+		rgba(215, 215, 215, 0.2);
+	border-radius: 10px;
+	padding-top: 10px;
+}
+
+.mui-input-group:before,
+.mui-table-view:before,
+.mui-input-group .mui-input-row:after,
+.mui-input-group:after,
+.mui-table-view:after{
+	height: 0;
+}
+
+#login-form{
+	
+}
+
+.mui-input-row label~input{
+	float: left;
+}
+
+.mui-input-row label{
+	width: 20%;
+}
+
+.mui-content-padded{
+	padding-bottom: 10px;
+}
+
+#login{
+	padding: 7px;
+	background-color: #FF512F;
+	color: #fff;
+	border: 0;
+}
+
+.mui-content-padded .link-area{
+	margin-top: 25px;
+	text-align: center;
+}
+
+.mui-content-padded .link-area a{
+	color: #7A6874;
+	margin: 0 5px;
+}
+
+a:active{
+	color: #fff;
+}
+
+.spliter{
+	color: #7A6874;
+}
+
+.oauth-area{
+	position: absolute;
+	bottom: 20px;
+	left: 0;
+	text-align: center;
+	width: 100%;
+	padding: 0;
+	margin: 0;
+}
+
+.oauth-area .oauth-btn{
+	display: inline-block;
+	width: 50px;
+	height: 50px;
+	background-size: 30px 30px;
+	background-position: center center;
+	background-repeat: no-repeat;
+	margin: 0 20px;
+	border-radius: 25px;
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<title></title>
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="../css/food_detail/ImgPreview.css" />
+		<link rel="stylesheet" type="text/css" href="../css/food_detail/commentItem.css" />
+		<style type="text/css">
+			.mui-title,
+			.mui-action-back.mui-icon{
+				color: #fff;
+			}
+			
+			header.mui-bar{
+				background-color: #7A6874;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">食友点评</h1>
+		</header>
+		<!--下拉刷新容器-->
+		<div id="pullrefresh" class="mui-content mui-scroll-wrapper">
+			<div class="mui-scroll">
+				<ul id="commentlist" class="mui-table-view mui-table-view-chevron">
+
+				</ul>
+			</div>
+
+		</div>
+
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<script src="../js/getcomment.js"></script>
+		<script src="../js/mui.zoom.js"></script>
+		<script src="../js/mui.previewimage.js"></script>
+		<script type="text/javascript">
+			var count = 5;
+			var page = 1;
+			var self = null;
+			var commentList = document.getElementById("commentlist");
+			mui.init({
+				pullRefresh: {
+					container: '#pullrefresh',
+					up: {
+						auto: true, //自动上拉加载一次
+						contentrefresh: "正在加载评论...",
+						contentnomore: '没有更多评论了',
+						callback: getCommentDatas
+					}
+				},
+				swipeBack:true //启用右滑关闭功能
+			});
+
+			mui.plusReady(function() {
+				self = plus.webview.currentWebview();
+			});
+
+			var first = true;//首次显示
+
+			function getCommentDatas() {
+				var url = api_url.getCommmentUrl.format(self.dealId, count, page);
+				//console.log(url);
+				//从服务器读取评论
+				mui.ajax(url, {
+					type: "GET",
+					dataType: "json",
+					timeout: 20000,
+					success: function(datas) {
+						//console.log(JSON.stringify(datas));
+						if(datas.length == 0) {
+							mui('#pullrefresh').pullRefresh().endPullupToRefresh(true);
+						} else {
+							//构建新的html片断
+							commentList.appendChild(createCommentFragment(datas));
+							page++;
+							mui('#pullrefresh').pullRefresh().endPullupToRefresh();
+							mui.previewImage();
+						}
+						if(first) {
+							//显示当前页面
+							self.show("pop-in", 200);
+							//关闭等待框
+							plus.nativeUI.closeWaiting();
+							first = !first;
+						}
+					}
+				});
+			}
+		</script>
+	</body>
+
+</html>

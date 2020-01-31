@@ -1,0 +1,41 @@
+.mui-action-back{
+	color: #F93D31;
+}
+
+.mui-input-group .mui-input-row label{
+	width: 26%;
+}
+
+.mui-input-row label~input{
+	float: left;
+}
+
+.mui-content{
+	width: 320px;
+	margin: 0 auto;
+	margin-top: 154px;
+	padding: 0;
+	background-color: #fff;
+	background-color: #ffffff;
+	box-shadow: 0px 8px 9.3px 0.7px 
+		rgba(215, 215, 215, 0.2);
+	border-radius: 10px;
+	padding-top: 10px;
+}
+
+.mui-bar-nav~.mui-content{
+	padding: 10px 0;
+}
+
+.mui-input-group:before,
+.mui-input-group:after,
+.mui-input-group .mui-input-row:after{
+	height: 0;
+}
+
+#reg{
+	padding: 7px;
+	background-color: #FF512F;
+	color: #fff;
+	border: 0;
+}

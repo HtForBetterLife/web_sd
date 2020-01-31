@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="../css/mine-offcanvasmenu/mine-offcanvasmenu.css" />
+	</head>
+
+	<body>
+		<div class="mui-content">
+			<div class="head_area">
+				<img src="../img/imgs/user-photo.png" id='user_img' />
+				<span id="nick_name">请登录</span>
+			</div>
+			<ul class="mui-table-view mui-table-view-chevron mui-table-view-inverted">
+				<li class="mui-table-view-cell" id="myfavour">
+					<a class="mui-navigate-right"><img src="../img/imgs/shouchang.png">我的收藏</a>
+				</li>
+				<li class="mui-table-view-cell" id="myorder">
+					<a class="mui-navigate-right"><img src="../img/imgs/order.png">我的订单</a>
+				</li>
+			</ul>
+			<div id="button_area">
+				<button id="close-btn" type="button" class="mui-btn mui-btn-danger mui-btn-block" style="display: none;">注销</button>
+			</div>
+		</div>
+
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			var main = null;
+			var mine = {
+				myfavour: document.getElementById("myfavour"),
+				myorder: document.getElementById("myorder"),
+				closeBtn: document.getElementById("close-btn"),
+				userImg: document.getElementById("user_img"),
+				nickname: document.getElementById("nick_name")
+			}
+			mui.plusReady(function() {
+				main = plus.webview.getWebviewById("main.html");
+				//根据用户token作页面处理
+				updateLoginInfo();
+				//返回事件
+				var old_back = mui.back;
+				mui.back = function() {
+					mui.fire(main, "menu:swipeleft");
+				}
+				//注销
+				mine.closeBtn.addEventListener("tap", function() {
+					mui(this).button("loading");
+					//清除设置
+					meishiapp.signout();
+					//清除设置之后恢复按钮并且隐藏
+					mui(this).button("reset");
+					this.style.display = "none";
+					mui.fire(main, "menu:swipeleft");
+					mine.nickname.innerText = "请登录";
+					mine.userImg.src = "../img/imgs/user-photo.png";
+				});
+
+				//登录
+				mine.nickname.addEventListener('tap', function() {
+					//判断是否是登录状态
+					if(!meishiapp.GetUserToken()) {
+						mui.fire(main, "menu:swipeleft");
+						mui.openWindow({
+							id: "login.html",
+							url: "login.html"
+						});
+					}
+				});
+
+				//我的订单
+				mine.myorder.addEventListener("tap", function() {
+					mui.fire(main, "menu:swipeleft");
+					meishiapp.openAuthorWindow("myorders.html", null);
+				});
+				
+				mine.myfavour.addEventListener('tap',function(){
+					mui.fire(main, "menu:swipeleft");
+					meishiapp.openAuthorWindow("favour.html", null);
+				})
+			})
+
+			//登录成功后需要处理的代码  
+			function updateLoginInfo() {
+				var token = meishiapp.GetUserToken();
+				//console.log(token);
+				//检测是否登录（获取过token）
+				mine.userImg.src = token ? "../img/imgs/head.jpg" : "../img/imgs/user-photo.png";
+				//根据token判断是否登录（显示注销按钮）
+				mine.closeBtn.style.display = token ? "block" : "none";
+				if(token) {
+					//读取用户名并显示
+					var url = api_url.getUserNameUrl.format(token);
+					//console.log(url);
+					mui.ajax(url, {
+						type: "GET",
+						cache: false,
+						timeout: 3000,
+						success: function(res) {
+							if(res) {
+								mine.nickname.innerText = res;
+							}
+						},
+						error: function(xhr, type, errorThrown) {
+							//异常处理；
+							console.log(type);
+						}
+					});
+				}
+			}
+
+			//添加自定义页面事件updateLogin。
+			document.addEventListener("updateLogin", updateLoginInfo);
+			document.addEventListener("swipeleft", function() {
+				mui.fire(main, "menu:swipeleft");
+			});
+		</script>
+	</body>
+
+</html>

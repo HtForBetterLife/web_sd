@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<title>login</title>
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="../css/login_register/login.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">登录</h1>
+		</header>
+		<div class="mui-content">
+			<form id='login-form' class="mui-input-group">
+				<div class="mui-input-row">
+					<label>账号</label>
+					<input id='account' type="text" class="mui-input-clear mui-input" placeholder="请输入账号">
+				</div>
+				<div class="mui-input-row">
+					<label>密码</label>
+					<input id='password' type="password" class="mui-input-clear mui-input" placeholder="请输入密码">
+				</div>
+			</form>
+			<form class="mui-input-group">
+				<ul class="mui-table-view mui-table-view-chevron">
+					<li class="mui-table-view-cell">
+						自动登录
+						<div id="autoLogin" class="mui-switch">
+							<div class="mui-switch-handle"></div>
+						</div>
+					</li>
+				</ul>
+			</form>
+			<div class="mui-content-padded">
+				<button id='login' class="mui-btn mui-btn-block" data-loading-text="请稍候">登录</button>
+				<div class="link-area">
+					<a id='reg'>注册账号</a> <span class="spliter">|</span>
+					<a id='forgetPassword'>忘记密码</a>
+				</div>
+			</div>
+			<div class="mui-content-padded oauth-area" id="oauthArea">
+				<div class="oauth-btn" style="background-image: url(../img/imgs/weixin.png);"></div>
+				<div class="oauth-btn" style="background-image: url(../img/imgs/qq.png);"></div>
+				<div class="oauth-btn" style="background-image: url(../img/imgs/sinaweibo.png);"></div>
+			</div>
+		</div>
+
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			var self = null,
+				mine = null;
+			var login = {
+				btnLogin: document.getElementById("login"),
+				account: document.getElementById("account"),
+				password: document.getElementById("password"),
+				regButton: document.getElementById("reg"),
+				oauthArea: document.getElementById("oauthArea"),
+				autoLoginButton: document.getElementById("autoLogin"),
+				autoLogin: false
+			};
+			//console.log(document.body.clientHeight)返回值一直是238。document.documentElement.clientHeight就没有问题
+			//用于隐藏下面的oauth区域.resize事件在输入法调出时触发。
+			window.addEventListener('resize', function() {
+				login.oauthArea.style.display = document.documentElement.clientHeight > 400 ? 'block' : 'none';
+				//console.log(document.documentElement.clientHeight)
+			}, false);
+			mui.plusReady(function() {
+				self = plus.webview.currentWebview();
+				mine = plus.webview.getWebviewById("mine-offcanvasmenu.html");
+				//console.log(mine)
+				login.btnLogin.addEventListener('tap', function() {
+					//正则表达式检测是否为空。
+					if(!meishiapp.regExp.notEmptyReg.test(login.account.value)) {
+						plus.nativeUI.toast("请输入账号");
+						return;
+					}
+					if(!meishiapp.regExp.notEmptyReg.test(login.password.value)) {
+						plus.nativeUI.toast("请输入密码");
+						return;
+					}
+					mui(login.btnLogin).button('loading');
+					meishiapp.dataType.userInfo.UserName = login.account.value;
+					meishiapp.dataType.userInfo.UserPass = login.password.value;
+
+					mui.ajax(api_url.userLoginUrl, {
+						type: "POST",
+						headers: {
+							'Content-Type': 'application/json;charset=utf-8'
+						},
+						//发送到服务器检测用户登录是否正确
+						data: JSON.stringify(meishiapp.dataType.userInfo),
+						success: function(data) {
+							mui(login.btnLogin).button("reset");
+							mui.fire(mine, "updateLogin");
+							//登录成功后的操作
+							//console.log(data.status);failed登录失败，ok登录成功
+							if(data.status == "ok") {
+								//保存是否自动登录設置。先获取设置，因为可能有其他的设置。
+								var settings = meishiapp.getSettings();
+								settings.autoLogin = login.autoLogin;
+								meishiapp.setSettings(settings);
+								//保存用户token。data.res为用户token
+								meishiapp.SetUserToken(data.res);
+								//console.log(meishiapp.GetUserToken());
+								//转向登录前要打开的页面
+								if(self.data) {
+									var data = JSON.parse(self.data);
+									if(data.win) {
+										mui.openWindow({
+											id: data.win,
+											url: data.win,
+											extras: {
+												data: JSON.stringify(data)
+											}
+										});
+									} else {
+										plus.webview.getWebviewById("main.html").show();
+									}
+									self.close();
+								} else {
+									plus.webview.getWebviewById("main.html").show();
+									self.close();
+								}
+							} else {
+								//登录失败,返回提示信息
+								plus.nativeUI.toast(data.res);
+							}
+						},
+						error: function(xhr, type, errorThrown) {
+							mui(login.btnLogin).button("reset");
+						}
+					})
+				})
+				login.regButton.addEventListener('tap', function() {
+					mui.openWindow({
+						id: "register.html",
+						url: "register.html",
+						extras: {
+								data: self.data
+						}
+					})
+				})
+
+				//自动登录开关切换
+				login.autoLoginButton.addEventListener("toggle", function() {
+					login.autoLogin = !login.autoLogin;
+				});
+			});
+			
+		</script>
+	</body>
+
+</html>

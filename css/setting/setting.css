@@ -1,0 +1,22 @@
+.mui-content{
+	text-align: center;
+}
+
+.icon-area{
+	display: inline-block;
+	margin: 20px 0;
+}
+
+.mui-table-view{
+	text-align: left;
+}
+
+.mui-table-view-cell{
+	font-size: 16px;
+	color: #584D7C;
+}
+
+.mui-switch.mui-active{
+	border-color: #584D7C;
+	background-color: #584D7C;
+}

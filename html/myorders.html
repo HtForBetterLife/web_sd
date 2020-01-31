@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>myorders</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../css/mine-offcanvasmenu/myorder.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">我的订单</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view" id="orderlist">
+			</ul>
+		</div>
+
+		<script id="oList" type="text/html">
+			<li class="mui-table-view-cell mui-media" data-id="{{OrderID}}">
+				<a href="javascript:;">
+					<img class="mui-media-object mui-pull-left" src="{{OrderImgUrl}}">
+					<div class="mui-media-body">
+						{{OrderTitle}}{{IsCommented}}
+						<p class="mui-ellipsis">数量:&nbsp;{{OrderCount}}</p><span></span>
+						<p class="mui-ellipsis">总价:&nbsp;￥{{OrderAmount}}</p><span></span>
+					</div>
+					{{if IsCommented}}
+					<div class="comment_area">
+						<a href="javascript:;">已评价</a>
+					</div>
+					{{else}}
+					<div class="comment_area">
+						<a href="javascript:;">待评价</a>
+						<button class="comment">评价</button>
+					</div>
+					{{/if}}
+				</a>
+			</li>
+		</script>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<script src="../js/template.js"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: true
+			});
+
+			var myorders = {
+				oul: document.getElementById("orderlist")
+			}
+			var self, token, url;
+			mui.plusReady(function() {
+				self = plus.webview.currentWebview();
+				token = meishiapp.GetUserToken();
+				url = api_url.orderUrl.format(token);
+				//console.log(url);
+				plus.nativeUI.showWaiting();
+				self.addEventListener("show", function() {
+					//WebView的显示事件
+					mui.ajax(url, {
+						type: "GET",
+						dataType: "json",
+						success: function(res) {
+							//console.log(JSON.stringify(res));
+							//按模板生成需要的html
+							var html = "";
+							for(var i = 0; i < res.length; i++) {
+								html += template("oList", res[i]);
+							}
+							myorders.oul.innerHTML = html;
+							//点击列表项
+							mui(".mui-table-view").on('tap', '.mui-table-view-cell', function(e) {
+								//console.log(e.target.tagName.toLowerCase())
+								//if(e.target.tagName.toLowerCase() == "button") 
+								var txt = this.innerText;
+								var oid = this.getAttribute("data-id");
+								if(txt.indexOf("待评价") > 0) {
+									openComment(oid);
+								} else if(txt.indexOf("已评价") > 0) {
+									showComment(oid);
+								}
+
+							});
+							plus.nativeUI.closeWaiting();
+						},
+						error: function(xhr, type, res) {
+							console.log(xhr.responseText);
+						}
+					});
+				});
+
+				self.show("pop-in", 200);
+			});
+
+			//打开评论窗口
+			function openComment(oid) {
+				mui.openWindow({
+					id: 'feedback.html',
+					url: 'feedback.html',
+					show: {
+						autoShow: false
+					},
+					extras: {
+						orderid: oid
+					}
+				});
+			}
+			//打开评论详情
+			function showComment(oid) {
+				mui.openWindow({
+					id: 'mycomment.html',
+					url: 'mycomment.html',
+					show: {
+						autoShow: false
+					},
+					extras: {
+						orderid: oid
+					}
+				});
+			}
+		</script>
+	</body>
+
+</html>

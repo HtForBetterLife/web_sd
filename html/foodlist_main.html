@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="../css/foodlist_main/foodlist_main.css" />
+		<link rel="stylesheet" type="text/css" href="../css/foodlist_main/slider.css" />
+
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<div class="mui-input-row mui-search">
+				<span id="area_name">成都市</span>
+				<input type="search" id="txtsearch" class="mui-input-clear" placeholder="输入商家或分类">
+				<span class="iconfont icon-saoma" id="scan"></span>
+			</div>
+		</header>
+		<div id="slider" class="mui-slider">
+			<div class="mui-slider-group mui-slider-loop">
+				<!-- 额外增加的一个节点(循环轮播：第一个节点是最后一张轮播) -->
+				<div class="mui-slider-item mui-slider-item-duplicate">
+					<a href="#">
+						<img src="../img/imgs/poster04.png">
+					</a>
+				</div>
+				<!-- 第一张 -->
+				<div class="mui-slider-item">
+					<a href="#">
+						<img src="../img/imgs/poster01.png">
+					</a>
+				</div>
+				<!-- 第二张 -->
+				<div class="mui-slider-item">
+					<a href="#">
+						<img src="../img/imgs/poster02.png">
+					</a>
+				</div>
+				<!-- 第三张 -->
+				<div class="mui-slider-item">
+					<a href="#">
+						<img src="../img/imgs/poster03.png">
+					</a>
+				</div>
+				<!-- 第四张 -->
+				<div class="mui-slider-item">
+					<a href="#">
+						<img src="../img/imgs/poster04.png">
+					</a>
+				</div>
+				<!-- 额外增加的一个节点(循环轮播：最后一个节点是第一张轮播) -->
+				<div class="mui-slider-item mui-slider-item-duplicate">
+					<a href="#">
+						<img src="../img/imgs/poster01.png">
+					</a>
+				</div>
+			</div>
+			<div class="mui-slider-indicator">
+				<div class="mui-indicator mui-active"></div>
+				<div class="mui-indicator"></div>
+				<div class="mui-indicator"></div>
+				<div class="mui-indicator"></div>
+			</div>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script type="text/javascript">
+			mui.init({
+				gestureConfig: {
+					doubletap: true
+				},
+				subpages: [{
+					url: 'foodlist_pullrefresh.html',
+					id: 'foodlist_pullrefresh.html',
+					styles: {
+						top: '215px',
+						bottom: '0px',
+					}
+				}]
+				
+			});
+			//获取main响应滑动事件
+			var main;
+			mui.plusReady(function() {
+				main = plus.webview.getWebviewById("main.html");;
+			});
+			document.addEventListener('swiperight', function(e) {
+				mui.fire(main, 'swiperight');
+			})
+
+			document.addEventListener('swipeleft', function(e) {
+				mui.fire(main, 'swipeleft');
+			})
+
+			//扫码
+			document.getElementById('scan').addEventListener('tap', function() {
+				//打开扫码界面
+				mui.openWindow({
+					url: "barcode_scan.html",
+					id: "barcode_scan.html",
+					waiting: {
+						autoShow: false
+					},
+					createNew: true
+
+				});
+			});
+			//轮播的配置
+			var slider = mui("#slider");
+			slider.slider({
+				interval: 2000
+			});
+			//添加关闭轮播组件事件
+			window.addEventListener("closeSlider", function(event) {
+				slider[0].classList.add("slider_hidden");
+			});
+
+			//添加打开轮播组件事件
+			window.addEventListener("openSlider", function(event) {
+				slider[0].classList.remove("slider_hidden");
+			});
+
+			
+
+			//canvas滑动
+			document.addEventListener('swiperight', function(e) {
+				mui.fire(main, 'swiperight');
+			})
+
+			document.addEventListener('swipeleft', function(e) {
+				mui.fire(main, 'swipeleft');
+			})
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,21 @@
+.mui-slider{
+	transition: height 0.2s;
+	margin-top: 50px;
+}
+
+.mui-slider-indicator .mui-indicator{
+	width: 7px;
+	height: 7px;
+}
+
+.mui-slider-indicator .mui-active.mui-indicator{
+	background-color: #FD5102;
+}
+
+.slider_hidden{
+	height: 0;
+}
+
+#sliderList.mui-slider{
+	margin-top: 0;
+}

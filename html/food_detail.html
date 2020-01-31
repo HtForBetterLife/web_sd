@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<title></title>
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="../css/food_detail/food_detail.css" />
+		<link rel="stylesheet" href="../css/food_detail/ImgPreview.css" />
+		<link rel="stylesheet" href="../css/food_detail/commentItem.css" />
+		<style type="text/css">
+			.mui-icon.mui-icon-location,
+			.mui-icon.mui-icon-phone {
+				margin-right: 5px;
+				color: #FA3E32;
+			}
+			
+			#deal_address,
+			#deal_phone,
+			#usercomment {
+				color: #7A6874;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">美食详情</h1>
+			<a class="iconfont" id="collect"></a>
+			<a class="iconfont icon-fenxiang" id="toshare" href="#sharediv"></a>
+		</header>
+
+		<div class="mui-content">
+			<div class="img_area">
+				<img src="" id="foodimg" />
+				<span class="img_title" id="foodtitle"></span>
+			</div>
+			<div class="price_area">
+				<span class="price" id="foodprice"></span><span class="deco_yuan">元</span>
+				<span class="old_price" id="foodoldprice"></span>
+				<button type="button" class="mui-btn">优惠买单</button>
+			</div>
+
+			<div class="desc_area">
+				<p id="food_desc"></p>
+				<ul class="mui-table-view">
+					<li class="mui-table-view-cell" id="address">
+						<a class="mui-navigate-right"><span class="mui-icon mui-icon-location"></span><span class="seller_info" id="deal_address"></span></a>
+					</li>
+					<li class="mui-table-view-cell" id="phone">
+						<a class="mui-navigate-right"><span class="mui-icon mui-icon-phone"></span><span class="seller_info" id="deal_phone"></span></a>
+					</li>
+
+				</ul>
+			</div>
+			<div class="comment_area">
+				<ul class="mui-table-view mui-table-view-chevron" id="commentlist">
+					<li class="mui-table-view-cell">
+						<a href="javascript:void(0);" id="usercomment" class="mui-navigate-right">食友点评</a>
+					</li>
+				</ul>
+			</div>
+			<!--以下是分享界面-->
+			<div id="sharediv" class="mui-popover mui-popover-action mui-popover-bottom">
+				<ul class="mui-table-view">
+					<div class="share_zone" data-class="weixin">
+						<img src="../img/imgs/share_weixin.png" />
+						<div class="share_des">微信好友</div>
+					</div>
+					<div class="share_zone" data-class="friend">
+						<img src="../img/imgs/share_weixinfriends.png" />
+						<div class="share_des">朋友圈</div>
+					</div>
+					<div class="share_zone" data-class="weibo">
+						<img src="../img/imgs/share_weibo.png" />
+						<div class="share_des">新浪微博</div>
+					</div>
+					<div class="share_zone" data-class="qq">
+						<img src="../img/imgs/share_qq.png" />
+						<div class="share_des">QQ</div>
+					</div>
+					<div class="share_zone" data-class="qqzone">
+						<img src="../img/imgs/share_qzone.png" />
+						<div class="share_des">QQ空间</div>
+					</div>
+					<div class="share_zone" data-class="more">
+						<img src="../img/imgs/share_more.png" />
+						<div class="share_des">更多</div>
+					</div>
+				</ul>
+			</div>
+		</div>
+
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<script src="../js/getcomment.js"></script>
+		<!--填充commentlist数据-->
+		<script src="../js/mui.zoom.js"></script>
+		<!--图片预览-->
+		<script src="../js/mui.previewimage.js"></script>
+		<script>
+			mui.init();
+
+			//获取数据填充、更新对象
+			var food_detail = {
+				commentlist: document.getElementById("commentlist"),
+				foodimg: document.getElementById("foodimg"),
+				foodtitle: document.getElementById("foodtitle"),
+				foodprice: document.getElementById("foodprice"),
+				foodoldprice: document.getElementById("foodoldprice"),
+				food_desc: document.getElementById("food_desc"),
+				deal_address: document.getElementById("deal_address"),
+				deal_phone: document.getElementById("deal_phone"),
+				deal_lat: null, //纬度
+				deal_lng: null, //经度
+				thedata: null,
+				phone: document.getElementById("phone"),
+				collect: document.getElementById("collect"),
+				favourdata: null
+			};
+			var shares = null;
+			var self;
+			window.onload = function() {
+				mui.plusReady(function() {
+					self = plus.webview.currentWebview();
+					//console.log(plus.webview.currentWebview().opener().id);
+					//获取food详细信息，填充数据
+					var urlDetail = api_url.getFoodDetailByIDUrl.format(self.deal_id);
+					mui.ajax(urlDetail, {
+						type: "GET",
+						cache: false,
+						dataType: "json",
+						success: function(res) {
+							//console.log(JSON.stringify(res));
+							food_detail.foodimg.src = res.deal_img;
+							food_detail.foodtitle.innerText = res.deal_name;
+							food_detail.foodprice.innerText = "￥" + res.price;
+							food_detail.foodoldprice.innerText = "原价:" + res.value + "元";
+							food_detail.food_desc.innerText = res.deal_desc;
+							food_detail.deal_address.innerText = res.deal_address;
+							food_detail.deal_phone.innerText = res.deal_phones;
+							food_detail.deal_lat = res.deal_lat;
+							food_detail.deal_lng = res.deal_lng;
+							food_detail.distance = res.deal_distance;
+							food_detail.thedata = res;
+						},
+						error: function(xrh, type, msg) {
+							//console.log(type);
+						}
+					});
+					updateServices();
+					//读取food的评论。每个list_item固定只读取两条评论，全部评论在comment_listitem里面
+					var urlMark = api_url.getCommmentUrl.format(self.deal_id, "2", "0");
+					//console.log(url);
+					mui.ajax(urlMark, {
+						type: "GET",
+						dataType: "json",
+						timeout: 2000,
+						success: function(datas) {
+							//console.log(datas);
+							//构建新的html片断
+							food_detail.commentlist.appendChild(createCommentFragment(datas));
+							setTimeout(function() {
+								//显示当前页面
+								mui.currentWebview.show("pop-in", 200);
+								//关闭等待框
+								plus.nativeUI.closeWaiting();
+							}, 200);
+							//预览图片
+							mui.previewImage();
+						}
+					});
+
+					//分享的每个选项的处理
+					mui("#sharediv").on("tap", ".share_zone", function() {
+						var type = this.getAttribute("data-class");
+						//调用手机系统的分享方式
+						if(type == "more") {
+							share("美食汇分享", "美食汇聚，从天而降---何先生。@美食汇http://www.meishihui68.com.cn/staticpage/food_detail.html");
+						} else if(type == "weixin" || type == "friend") {
+							shareAction(type);
+						} else {
+							mui.toast("现在还没有实现此功能！");
+						}
+					});
+
+					//拨打电话
+					food_detail.phone.addEventListener('tap', function() {
+						plus.device.dial(deal_phone.innerText, true);
+					});
+
+					//收藏按钮处理事件
+					food_detail.collect.addEventListener("tap", function() {
+						//处理收藏
+						if(mui(".icon-shoucang1").length == 1) {
+							//收藏
+							addToFavour();
+						} else {
+							//取消收藏
+							removeFromFavour();
+						}
+
+					});
+
+					//以下是决定收藏的图标显示，读取存储过的收藏信息（是否点击过收藏按钮），没有的话就置为空对象。
+					food_detail.favourdata = JSON.parse(plus.storage.getItem("favourdata")) || [];
+					//alert(food_detail.favourdata.length);
+					//console.log(JSON.stringify(food_detail.favourdata));
+					var iconName = "icon-shoucang1";
+					//遍历收藏信息，决定图标的显示用哪个
+					for(var i = 0; i < food_detail.favourdata.length; i++) {
+						if(self.deal_id == food_detail.favourdata[i].deal_id) {
+							//说明收藏过
+							iconName = "icon-shoucang";
+							break;
+						}
+					}
+					//console.log(iconName);
+					food_detail.collect.classList.add(iconName);
+
+					//地图定位,打开相应的webview
+					document.getElementById('address').addEventListener('tap', function() {
+						//打开地图显示页面
+						mui.openWindow({
+							id: 'map.html',
+							url: 'map.html',
+							show: {
+								autoShow: false
+							},
+							extras: {
+								"address": food_detail.deal_address.innerText,
+								"phone": food_detail.deal_phone.innerText,
+								"lat": food_detail.deal_lat,
+								"lng": food_detail.deal_lng
+							}
+						});
+					})
+
+					//打开评价列表
+					document.getElementById('usercomment').addEventListener('tap', function() {
+						//打开美食详情
+						mui.openWindow({
+							id: 'comment_listitem.html',
+							url: 'comment_listitem.html',
+							show: {
+								autoShow: false
+							},
+							extras: {
+								"dealId": self.deal_id
+							}
+						});
+					});
+
+					var old_back = mui.back;
+					mui.back = function() {
+						if(plus.webview.currentWebview().opener().id == "favour.html") {
+							mui.fire(plus.webview.currentWebview().opener(),"fresh");
+						}
+						setTimeout(function(){
+							old_back();
+						},100)
+					}
+				})
+			}
+
+			/**
+			 * 获取分享服务成功后返回支持的所有服务列表
+			 */
+			function updateServices() {
+				plus.share.getServices(function(s) {
+					//获取分享服务列表成功时的回调函数，用于返回终端支持的分享服务列表。 
+					shares = {};
+					for(var i in s) {
+						var t = s[i];
+						shares[t.id] = t;
+					}
+					console.log(JSON.stringify(shares));
+				}, function(e) {
+					//console.log("获取分享服务列表失败：  " + e.message);
+				});
+			}
+
+			//调用Android的系统分享
+			function share(shareTip, shareText) {
+				if(plus.os.name == "Android") {
+					//导入Java类对象
+					var Context = plus.android.importClass("android.content.Intent");
+					//获取应用主Activity
+					var Main = plus.android.runtimeMainActivity();
+					//将类Context的这个行为(Action)ACTION_SEND，赋给shareIntent
+					var shareIntent = new Context(Context.ACTION_SEND);
+					//设置分享类型
+					shareIntent.setType("text/plain");
+					//设置分享文本
+					shareIntent.putExtra(Context.EXTRA_TEXT, shareText);
+					Main.startActivity(Context.createChooser(shareIntent, shareTip));
+				}
+			}
+
+			//微信分享
+			function shareAction(sharetype) {
+				//构建微信要分享的消息格式
+				var msg = {};
+				msg.content = food_detail.food_desc.innerText;
+				msg.extra = {};
+				if(sharetype == "weixin") {
+					msg.extra.scene = "WXSceneSession";
+				} else if(sharetype == "friend") {
+					msg.extra.scene = "WXSceneTimeline";
+				} else {
+					return;
+				}
+				msg.href = "http://www.meishihui68.com.cn/staticpage/food_detail.html";
+				msg.title = food_detail.foodtitle.innerText;
+				var thumbs = [];
+				thumbs.push(food_detail.foodimg.src);
+				msg.thumbs = thumbs;
+				msg.pictures = ["_www/logo.png"];
+				console.log(JSON.stringify(msg));
+				//取微信的授权
+				sharetype = "weixin";
+				var share = shares[sharetype];
+				//已授权
+				if(share.authenticated) {
+					//console.log(JSON.stringify(msg));
+					share.send(msg, function() {
+						mui.toast("分享成功！");
+						mui('#sharediv').popover('toggle');
+					}, function() {
+						mui.toast("分享失败");
+					});
+				}
+
+			}
+
+			//添加到收藏列表，存入本地。
+			function addToFavour() {
+				food_detail.favourdata.push(food_detail.thedata);
+				//收藏的listItem信息存入本地。如果设置的键（favourdata）在应用数据存储中已经存在，则更新存储的键值。
+				plus.storage.setItem("favourdata", JSON.stringify(food_detail.favourdata));
+				//切换图标
+				food_detail.collect.classList.remove("icon-shoucang1");
+				food_detail.collect.classList.add("icon-shoucang");
+				plus.nativeUI.toast("收藏成功！");
+			}
+			//从收藏列表移除
+			function removeFromFavour() {
+				meishiapp.removeFavour(self.deal_id);
+				food_detail.collect.classList.remove("icon-shoucang");
+				food_detail.collect.classList.add("icon-shoucang1");
+				plus.nativeUI.toast("收藏已取消！");
+			}
+		</script>
+	</body>
+
+</html>

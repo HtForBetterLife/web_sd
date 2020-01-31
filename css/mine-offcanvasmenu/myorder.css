@@ -1,0 +1,55 @@
+#orderlist {
+	margin-top: -1px;
+}
+
+.mui-table-view .mui-media-object {
+	line-height: 80px;
+	max-width: 86px;
+	height: 60px;
+}
+
+.mui-media-body {
+	font-size: 16px;
+	font-family: "微软雅黑";
+	float: left;
+}
+
+.mui-table-view-cell {
+	height: 110px;
+	position: relative;
+	padding-top: 15px;
+}
+
+.mui-ellipsis {
+	margin-top: 8px;
+}
+
+.comment_area {
+	width: 100px;
+	height: 110px;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+
+.comment_area a {
+	float: right;
+	margin-right: 8px;
+	margin-top: 15px;
+	font-size: 13px;
+	font-family: "微软雅黑";
+}
+
+.comment_area button {
+	float: right;
+	margin-right: 16px;
+	margin-top: 20px;
+	color: #ff512f;
+	border: 1px solid #ff512f;
+	width: 60px;
+	font-size: 13px;
+}
+ 
+button.comment:active {
+	background-color: #ff512f;
+}
